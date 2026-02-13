@@ -1,3 +1,3 @@
-from ChatApp.asgi import application
+from ChatApp.wsgi import application
 
 app = application
