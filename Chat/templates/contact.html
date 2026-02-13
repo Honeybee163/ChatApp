@@ -1,0 +1,1030 @@
+{% load dict_filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacts</title>
+
+    <style>
+        :root {
+            --color-light: #FFF7CD;
+            --color-accent-soft: #FDC3A1;
+            --color-accent-strong: #FB9B8F;
+            --color-text-main: #2f1e16;
+            --color-text-muted: #8a6b57;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--color-light), var(--color-accent-soft));
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar {
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            background: linear-gradient(90deg, var(--color-accent-soft), var(--color-accent-strong));
+            color: #3b241a;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+            z-index: 5;
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            letter-spacing: 0.05em;
+        }
+
+        .navbar-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .nav-link-btn {
+            padding: 6px 14px;
+            border-radius: 999px;
+            border: none;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: #3b241a;
+            background: rgba(255, 247, 205, 0.9);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+        }
+
+        .nav-link-btn.outline {
+            background: transparent;
+            border: 1px solid rgba(255, 247, 205, 0.9);
+            box-shadow: none;
+        }
+
+        /* IMPORTANT FIX */
+        .main-shell {
+            flex: 1;
+            padding: 10px 10px 14px;
+            height: calc(100vh - 56px);
+        }
+
+        .app-shell {
+            width: 100%;
+            height: 100%;
+            background: #fffdf7;
+            border-radius: 20px;
+            box-shadow: 0 22px 60px rgba(0, 0, 0, 0.18);
+            overflow: hidden;
+            display: flex;
+            border: 1px solid rgba(251, 155, 143, 0.45);
+        }
+
+        .sidebar {
+            width: 32%;
+            border-right: 1px solid rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(180deg, rgba(255, 247, 205, 0.95), rgba(253, 195, 161, 0.35));
+        }
+
+        .sidebar-header {
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar-header-title {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .sidebar-header-title h2 {
+            font-size: 1.2rem;
+            color: var(--color-text-main);
+        }
+
+        .sidebar-header-title span {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+        }
+
+        .icon-button {
+            width: 32px;
+            height: 32px;
+            border-radius: 999px;
+            border: none;
+            background: radial-gradient(circle at 20% 0, #fff7e0, var(--color-accent-strong));
+            color: #3b241a;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 6px 16px rgba(251, 155, 143, 0.4);
+            font-size: 1.1rem;
+            transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+        }
+
+        .icon-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 22px rgba(251, 155, 143, 0.55);
+            filter: brightness(1.05);
+        }
+
+        .hamburger-btn {
+            display: none;
+            margin-right: 8px;
+        }
+
+        .sidebar-body {
+            padding: 10px 12px 12px;
+            overflow-y: auto;
+        }
+
+        .contacts-empty {
+            margin-top: 28px;
+            text-align: center;
+            font-size: 0.92rem;
+            color: var(--color-text-muted);
+        }
+
+        .contacts-empty span {
+            display: block;
+            margin-top: 6px;
+            font-size: 0.85rem;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.12s ease, transform 0.08s ease;
+        }
+
+        .contact-item:hover {
+            background-color: rgba(255, 255, 255, 0.8);
+            transform: translateY(-1px);
+        }
+
+        .avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, var(--color-accent-soft), var(--color-accent-strong));
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #fffdf7;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .contact-main {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .contact-name {
+            font-size: 0.96rem;
+            font-weight: 600;
+            color: var(--color-text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .contact-subtitle {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+        }
+
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: radial-gradient(circle at top right, rgba(251, 155, 143, 0.18), transparent 58%),
+                        radial-gradient(circle at bottom left, rgba(255, 247, 205, 0.7), #fffdf7 55%);
+        }
+
+        .chat-header {
+            padding: 14px 18px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-header .avatar {
+            width: 32px;
+            height: 32px;
+            font-size: 0.9rem;
+        }
+
+        .chat-header-main {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .chat-header-main h3 {
+            font-size: 1rem;
+            color: var(--color-text-main);
+        }
+
+        .chat-header-main span {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+        }
+
+        /* IMPORTANT FIX */
+        .chat-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 0;
+        }
+
+        .messages-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+}
+
+        .message-wrapper {
+            display: flex;
+            width: 100%;
+        }
+
+        .message-wrapper.sent {
+            justify-content: flex-end;
+        }
+
+        .message-wrapper.received {
+            justify-content: flex-start;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 10px 14px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .message-image img,
+        .chat-thumbnail {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 14px;
+        }
+
+        .message-wrapper.sent .message-bubble {
+            background: linear-gradient(135deg, var(--color-accent-strong), var(--color-accent-soft));
+            color: #3b241a;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-wrapper.received .message-bubble {
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--color-text-main);
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            margin-top: 4px;
+            opacity: 0.7;
+        }
+
+        .empty-chat {
+            text-align: center;
+            max-width: 320px;
+            margin: auto;
+        }
+
+        .empty-chat h2 {
+            font-size: 1.3rem;
+            color: var(--color-text-main);
+            margin-bottom: 6px;
+        }
+
+        .empty-chat p {
+            font-size: 0.9rem;
+            color: var(--color-text-muted);
+        }
+
+        .chat-footer {
+            padding: 12px 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        .message-form {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .message-input-wrapper {
+            flex: 1;
+        }
+
+        .message-input-wrapper input {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            background-color: #fffef3;
+            outline: none;
+            font-size: 0.9rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .message-input-wrapper input:focus {
+            border-color: var(--color-accent-strong);
+            box-shadow: 0 0 0 2px rgba(251, 155, 143, 0.4);
+            background-color: #ffffff;
+        }
+
+        .send-button {
+            padding: 10px 20px;
+            border-radius: 999px;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(135deg, var(--color-accent-strong), var(--color-accent-soft));
+            color: #3b241a;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 12px rgba(251, 155, 143, 0.4);
+            transition: transform 0.12s ease, box-shadow 0.12s ease;
+        }
+
+        .send-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(251, 155, 143, 0.55);
+        }
+
+        .send-button:active {
+            transform: translateY(0);
+        }
+
+        .image-selected-info {
+            display: none;
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            margin-right: 8px;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: rgba(253, 195, 161, 0.25);
+            max-width: 120px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .image-selected-info.visible {
+            display: inline-block;
+        }
+
+        /* Modal */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.32);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+        }
+
+        .modal-backdrop.open {
+            display: flex;
+        }
+
+        .modal {
+            width: 100%;
+            max-width: 420px;
+            background: #fffdf8;
+            border-radius: 18px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(253, 195, 161, 0.6);
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 14px 18px 10px;
+            background: linear-gradient(135deg, var(--color-accent-soft), var(--color-accent-strong));
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #3b241a;
+        }
+
+        .modal-header h3 {
+            font-size: 1.1rem;
+        }
+
+        .modal-close {
+            border: none;
+            background: transparent;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #3b241a;
+        }
+
+        .modal-body {
+            padding: 18px 18px 16px;
+        }
+
+        .modal-body p {
+            font-size: 0.9rem;
+            color: var(--color-text-muted);
+            margin-bottom: 10px;
+        }
+
+        .modal form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .modal form p {
+            margin: 0;
+        }
+
+        .modal label {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--color-text-main);
+        }
+
+        .modal input {
+            padding: 9px 11px;
+            border-radius: 999px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            background-color: #fffef3;
+            outline: none;
+            font-size: 0.9rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .modal input:focus {
+            border-color: var(--color-accent-strong);
+            box-shadow: 0 0 0 2px rgba(251, 155, 143, 0.4);
+            background-color: #ffffff;
+        }
+
+        .modal-footer {
+            padding: 0 18px 16px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .btn-secondary {
+            padding: 9px 14px;
+            border-radius: 999px;
+            border: none;
+            cursor: pointer;
+            background: rgba(255, 247, 205, 0.9);
+            color: var(--color-text-main);
+            font-size: 0.88rem;
+        }
+
+        .btn-primary {
+            padding: 9px 16px;
+            border-radius: 999px;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(135deg, var(--color-accent-strong), var(--color-accent-soft));
+            color: #3b241a;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 10px 20px rgba(251, 155, 143, 0.45);
+        }
+
+        @media (max-width: 800px) {
+            .main-shell {
+                padding: 6px 6px 10px;
+                height: auto;
+                min-height: calc(100vh - 56px);
+            }
+
+            .app-shell {
+                flex-direction: column;
+                height: auto;
+                position: relative;
+                overflow: visible;
+            }
+
+            .hamburger-btn {
+                display: inline-flex;
+            }
+
+            /* Mobile: when no chat is selected, show only the contacts sidebar */
+            body.no-chat .sidebar {
+                display: flex;
+                width: 100%;
+                height: 100%;
+            }
+
+            body.no-chat .chat-area {
+                display: none;
+            }
+
+            /* Mobile: when a chat is selected, hide sidebar by default */
+            body.has-chat .sidebar {
+                display: none;
+            }
+
+            body.has-chat .chat-area {
+                display: flex;
+                flex: 1;
+            }
+
+            /* Mobile: when hamburger is tapped, overlay sidebar on top of chat */
+            body.sidebar-open .sidebar {
+                display: flex;
+                flex-direction: column;
+                position: fixed;
+                top: 56px; /* below navbar */
+                left: 0;
+                right: 0;
+                bottom: 0;
+                width: 100%;
+                height: auto;
+                z-index: 30;
+                background: linear-gradient(180deg, rgba(255, 247, 205, 0.98), rgba(253, 195, 161, 0.9));
+            }
+
+            body.sidebar-open .chat-area {
+                filter: blur(2px);
+            }
+
+            /* Let the whole page scroll naturally on small screens */
+            .chat-body {
+                overflow: visible;
+            }
+
+            .messages-container {
+                overflow-y: visible;
+            }
+        }
+
+        /* Fullscreen image modal */
+        .image-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.85);
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .image-modal.open {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .image-modal .modal-content {
+            margin: 0;
+            max-width: 95%;
+            max-height: 85vh;
+        }
+
+        .image-modal #caption {
+            margin-top: 10px;
+            width: 100%;
+            color: #fff;
+            padding: 10px 0;
+            font-size: 0.9rem;
+        }
+
+        .image-modal .close {
+            position: fixed;
+            top: 16px;
+            right: 20px;
+            color: #fff;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+   
+    </style>
+</head>
+
+<body class="{% if selected_room %}has-chat{% else %}no-chat{% endif %}">
+
+    <nav class="navbar">
+        <div class="navbar-brand">ChatApp</div>
+        <div class="navbar-actions">
+            {% if user.is_authenticated %}
+                <form action="{% url 'logout' %}" method="post" style="margin:0;">
+                    {% csrf_token %}
+                    <button type="submit" class="nav-link-btn">Logout</button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}" class="nav-link-btn">Login</a>
+                <a href="{% url 'register' %}" class="nav-link-btn outline">Register</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="main-shell">
+        <div class="app-shell">
+
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <div class="sidebar-header-title">
+                        <h2>Chats</h2>
+                        <span>Your saved contacts</span>
+                    </div>
+                    <button class="icon-button" id="openAddContact" type="button">+</button>
+                </div>
+
+                <div class="sidebar-body">
+                    {% if contacts %}
+                        {% for contact in contacts %}
+                            <div class="contact-item" data-contact-name="{{ contact.other_user.username }}" data-room-id="{{ room_ids|get_item:contact.other_user.id }}">
+                                <div class="avatar">
+                                    {{ contact.other_user.username|first|upper }}
+                                </div>
+                                <div class="contact-main">
+                                    <div class="contact-name">
+                                        <a href="{% url 'home' room_ids|get_item:contact.other_user.id %}" style="text-decoration: none; color: inherit;">
+                                            {{ contact.other_user.username }}
+                                        </a>
+                                    </div>
+                                    <div class="contact-subtitle">
+    {% with last_messages|get_item:contact.other_user.id as last_msg %}
+        {% if last_msg %}
+            {{ last_msg.text|truncatechars:30 }}
+        {% else %}
+            No messages yet
+        {% endif %}
+    {% endwith %}
+</div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="contacts-empty">
+                            <strong>No contact added</strong>
+                            <span>Click the + button to add someone using their email or phone number.</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </aside>
+
+            <section class="chat-area">
+                <header class="chat-header">
+                    <button class="icon-button hamburger-btn" id="toggleSidebar" type="button">&#9776;</button>
+                    <div class="avatar" id="chatAvatar">
+                        {% if chat_user %}
+                            {{ chat_user.username|first|upper }}
+                        {% else %}
+                            ?
+                        {% endif %}
+                    </div>
+                    <div class="chat-header-main">
+                        <h3 id="chatUserName">
+                            {% if chat_user %}
+                                {{ chat_user.username }}
+                            {% else %}
+                                No chat selected
+                            {% endif %}
+                        </h3>
+                        <span id="chatUserStatus">
+                            {% if chat_user %}
+                                Online
+                            {% else %}
+                                Select a contact from the left to start
+                            {% endif %}
+                        </span>
+                    </div>
+                </header>
+                <!-- Modal for enlarged image -->
+                <div id="imageModal" class="image-modal">
+  <span class="close">&times;</span>
+  <img class="modal-content" id="modalImage">
+  <div id="caption"></div>
+</div>
+
+                <main class="chat-body">
+                    {% if messages %}
+                        <div class="messages-container" id="messagesContainer">
+                            {% for message in messages %}
+    <div class="message-wrapper {% if message.sender == user %}sent{% else %}received{% endif %}">
+        <div class="message-bubble">
+            {% if message.text %}
+                <div class="message-text">{{ message.text }}</div>
+            {% endif %}
+            {% if message.image %}
+                <div class="message-image">
+                    <!-- Thumbnail -->
+                    <img src="{{ message.image.url }}" alt="image" 
+                        class="chat-thumbnail"
+                        style="cursor: pointer;">
+                </div>
+            {% endif %}
+            <div class="message-time">{{ message.timestamp|date:"g:i A" }}</div>
+        </div>
+    </div>
+    {% endfor %}
+                        </div>
+
+
+                    {% else %}
+
+                        
+                        <div class="empty-chat" id="noChatMessage">
+                            {% if chat_user %}
+                                <h2>No messages yet</h2>
+                                <p>Start a conversation with {{ chat_user.username }} – your messages will appear here.</p>
+                            {% else %}
+                                <h2>No chat yet</h2>
+                                <p>Choose a contact from the sidebar to open a chat. Messages will appear here once you start talking.</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </main>
+
+                <footer class="chat-footer">
+    {% if selected_room %}
+        <form method="POST" enctype="multipart/form-data" class="message-form" id="messageForm" action="{% url 'send_message' current_room_id %}">
+            {% csrf_token %}
+            <div class="message-input-wrapper">
+                {{ message_form.text }}
+            </div>
+            <!-- Image upload button -->
+            <label for="imageInput" class="send-button" style="margin-right: 6px; cursor: pointer;">
+                ➕
+            </label>
+            <span id="imageSelectedInfo" class="image-selected-info"></span>
+            <input type="file" id="imageInput" name="image" style="display: none;" accept="image/*">
+            <button type="submit" class="send-button">Send</button>
+        </form>
+    {% else %}
+        <div style="text-align: center; color: var(--color-text-muted); font-size: 0.8rem;">
+            Select a contact to start chatting
+        </div>
+    {% endif %}
+</footer>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- Add contact modal -->
+    <div class="modal-backdrop" id="addContactModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Add contact</h3>
+                <button class="modal-close" id="closeAddContact" type="button">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Add a contact using their email or phone number.</p>
+                <form action="" method="POST">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary" id="cancelAddContact">Cancel</button>
+                        <button type="submit" class="btn-primary" name="submit_contact">Save contact</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script>
+        (function () {
+            const modalBackdrop = document.getElementById('addContactModal');
+            const openBtn = document.getElementById('openAddContact');
+            const closeBtn = document.getElementById('closeAddContact');
+            const cancelBtn = document.getElementById('cancelAddContact');
+
+            function openModal() {
+                if (modalBackdrop) modalBackdrop.classList.add('open');
+            }
+
+            function closeModal() {
+                if (modalBackdrop) modalBackdrop.classList.remove('open');
+            }
+
+document.addEventListener("DOMContentLoaded", function() {
+    const modal = document.getElementById("imageModal");
+    const modalImg = document.getElementById("modalImage");
+    const captionText = document.getElementById("caption");
+    const closeBtn = document.getElementsByClassName("close")[0];
+
+    document.querySelectorAll(".chat-thumbnail").forEach(img => {
+        img.addEventListener("click", function() {
+        modal.classList.add("open");
+        modalImg.src = this.src;
+        captionText.innerHTML = this.alt || '';
+        });
+    });
+
+    closeBtn.onclick = function() {
+        modal.classList.remove("open");
+    }
+
+    // Close modal when clicking outside the image
+    modal.onclick = function(event) {
+        if (event.target === modal) {
+        modal.classList.remove("open");
+        }
+    }
+});
+
+            if (openBtn) openBtn.addEventListener('click', openModal);
+            if (closeBtn) closeBtn.addEventListener('click', closeModal);
+            if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+
+            if (modalBackdrop) {
+                modalBackdrop.addEventListener('click', function (e) {
+                    if (e.target === modalBackdrop) closeModal();
+                });
+            }
+
+            // Scroll to bottom of messages when page loads
+            const messagesContainer = document.getElementById('messagesContainer');
+            if (messagesContainer) {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+
+            // WebSocket realtime chat
+            const currentRoomId = "{{ current_room_id|default_if_none:'' }}";
+            const currentUserId = "{{ user.id|default_if_none:'' }}";
+            const formEl = document.getElementById('messageForm');
+            const inputEl = formEl ? formEl.querySelector('input[name="text"]') : null;
+            const imageInputEl = formEl ? formEl.querySelector('input[name="image"]') : null;
+            const imageSelectedInfoEl = document.getElementById('imageSelectedInfo');
+
+            function formatTime(iso) {
+                try {
+                    const d = new Date(iso);
+                    return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+                } catch (e) {
+                    return '';
+                }
+            }
+
+            function ensureMessagesContainer() {
+                let c = document.getElementById('messagesContainer');
+                if (!c) {
+                    const chatBody = document.querySelector('.chat-body');
+                    if (!chatBody) return null;
+
+                    const empty = document.getElementById('noChatMessage');
+                    if (empty) empty.remove();
+
+                    c = document.createElement('div');
+                    c.className = 'messages-container';
+                    c.id = 'messagesContainer';
+                    chatBody.appendChild(c);
+                }
+                return c;
+            }
+
+            function appendMessageBubble(msg) {
+                const c = ensureMessagesContainer();
+                if (!c) return;
+
+                const wrapper = document.createElement('div');
+                const isSent = String(msg.sender_id) === String(currentUserId);
+                wrapper.className = 'message-wrapper ' + (isSent ? 'sent' : 'received');
+
+                const bubble = document.createElement('div');
+                bubble.className = 'message-bubble';
+
+                const text = document.createElement('div');
+                text.className = 'message-text';
+                text.textContent = msg.text || '';
+
+                const time = document.createElement('div');
+                time.className = 'message-time';
+                time.textContent = msg.timestamp_iso ? formatTime(msg.timestamp_iso) : '';
+
+                bubble.appendChild(text);
+                bubble.appendChild(time);
+                wrapper.appendChild(bubble);
+                c.appendChild(wrapper);
+
+                c.scrollTop = c.scrollHeight;
+            }
+
+            let socket = null;
+            if (currentRoomId && currentUserId) {
+                const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+                const wsUrl = `${protocol}://${window.location.host}/ws/chat/${currentRoomId}/`;
+                socket = new WebSocket(wsUrl);
+
+                socket.onmessage = function (e) {
+                    try {
+                        const data = JSON.parse(e.data);
+                        const msg = data.message ? data.message : data;
+                        if (msg && msg.text) {
+                            appendMessageBubble(msg);
+                        }
+                    } catch (err) {
+                        console.log("WebSocket error:", err);
+                    }
+                };
+            }
+
+            // Show small indicator when an image is selected
+            if (imageInputEl && imageSelectedInfoEl) {
+                imageInputEl.addEventListener('change', function () {
+                    const file = this.files && this.files[0];
+                    if (file) {
+                        const name = file.name || 'Image selected';
+                        imageSelectedInfoEl.textContent = name.length > 18 ? name.slice(0, 15) + '…' : name;
+                        imageSelectedInfoEl.classList.add('visible');
+                    } else {
+                        imageSelectedInfoEl.textContent = '';
+                        imageSelectedInfoEl.classList.remove('visible');
+                    }
+                });
+            }
+
+            // Mobile sidebar toggle (hamburger)
+            const toggleSidebarBtn = document.getElementById('toggleSidebar');
+            if (toggleSidebarBtn) {
+                toggleSidebarBtn.addEventListener('click', function () {
+                    document.body.classList.toggle('sidebar-open');
+                });
+            }
+
+            // Ensure sidebar overlay state is cleared on desktop
+            window.addEventListener('resize', function () {
+                if (window.innerWidth > 800) {
+                    document.body.classList.remove('sidebar-open');
+                }
+            });
+
+            // Intercept form submit and send over websocket ONLY for pure-text messages.
+            if (formEl && inputEl) {
+                formEl.addEventListener('submit', function (e) {
+                    const text = (inputEl.value || '').trim();
+                    const hasImage = imageInputEl && imageInputEl.files && imageInputEl.files.length > 0;
+
+                    // If there's an image, let the normal form submit handle text + image together.
+                    if (hasImage) {
+                        return;
+                    }
+
+                    // No image and no text -> do nothing
+                    if (!text) {
+                        e.preventDefault();
+                        return;
+                    }
+
+                    if (socket && socket.readyState === WebSocket.OPEN) {
+                        e.preventDefault();
+                        socket.send(JSON.stringify({ text }));
+                        inputEl.value = '';
+                        inputEl.focus();
+                    }
+                });
+            }
+        })();
+    </script>
+
+</body>
+</html>

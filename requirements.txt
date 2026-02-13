@@ -1,0 +1,12 @@
+django==5.2.5
+whitenoise==6.8.2
+dj-database-url
+psycopg2-binary
+Pillow
+cloudinary
+django-cloudinary-storage
+channels
+daphne
+asgiref
+uvicorn
+gunicorn

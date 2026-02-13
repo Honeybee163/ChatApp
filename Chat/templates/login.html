@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        :root {
+            --color-light: #FFF7CD;
+            --color-accent-soft: #FDC3A1;
+            --color-accent-strong: #FB9B8F;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at top, var(--color-light), #ffffff 40%),
+            linear-gradient(135deg, var(--color-accent-soft), var(--color-accent-strong));
+            background-attachment: fixed;
+        }
+
+        .auth-wrapper {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 18px;
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.12);
+            overflow: hidden;
+            border: 1px solid rgba(251, 155, 143, 0.3);
+        }
+
+        .auth-header {
+            padding: 18px 24px 10px;
+            background: linear-gradient(135deg, var(--color-accent-soft), var(--color-accent-strong));
+            color: #3b241a;
+        }
+
+        .auth-header h1 {
+            font-size: 1.6rem;
+            margin-bottom: 4px;
+        }
+
+        .auth-header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .auth-body {
+            padding: 22px 24px 24px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        form p {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin: 0;
+        }
+
+        label {
+            font-size: 0.9rem;
+            color: #4b2f21;
+            font-weight: 600;
+        }
+
+        input {
+            padding: 10px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            background-color: #fffdf4;
+            outline: none;
+            font-size: 0.95rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+        }
+
+        input:focus {
+            border-color: var(--color-accent-strong);
+            box-shadow: 0 0 0 2px rgba(251, 155, 143, 0.35);
+            background-color: #ffffff;
+        }
+
+        .btn-primary {
+            margin-top: 10px;
+            padding: 11px 16px;
+            border-radius: 999px;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(135deg, var(--color-accent-strong), var(--color-accent-soft));
+            color: #3b241a;
+            font-weight: 700;
+            font-size: 0.98rem;
+            letter-spacing: 0.02em;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 0 12px 25px rgba(251, 155, 143, 0.45);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 16px 35px rgba(251, 155, 143, 0.65);
+            filter: brightness(1.03);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 8px 18px rgba(251, 155, 143, 0.4);
+        }
+
+        .auth-footer {
+            padding: 0 24px 18px;
+            font-size: 0.85rem;
+            color: #6e5140;
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .auth-footer a {
+            color: #c64a32;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>Welcome back</h1>
+                <p>Log in to continue chatting with your contacts.</p>
+            </div>
+            <div class="auth-body">
+                <form action="" method="POST">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn-primary">Log in</button>
+                </form>
+            </div>
+            <div class="auth-footer">
+                <span>New here?</span>
+                <a href="{% url 'register' %}">Create an account</a>
+            </div>
+        </div>
+    </div> 
+</body>
+</html>
